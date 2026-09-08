@@ -1399,6 +1399,33 @@ menuPanel.querySelectorAll('a[data-action]').forEach(a => {
 <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script>(function () {
+  // Run only after the document has finished parsing (DOMContentLoaded).
+  // This file used to be loaded as `<script defer src="/auth-gate.js">`,
+  // and browsers execute same-document `defer` scripts strictly in source
+  // order -- so it always ran *after* the two `defer`-loaded Firebase SDK
+  // scripts above it, guaranteeing `window.firebase` existed by the time
+  // this code ran. Since 2026-09-08 this file's contents get spliced
+  // directly into index.html as a plain inline script near the end of
+  // <body> (see build_dashboard.py) to fix the file:// blank-screen bug --
+  // but the `defer` attribute has NO
+  // effect on inline scripts (they always run immediately, synchronously,
+  // at their position in the document), so this inline script started
+  // running *before* the still-pending deferred Firebase scripts, meaning
+  // `window.firebase` was always undefined here. That silently hit the
+  // "Firebase SDK not loaded" fallback below on every page load: the page
+  // still became visible (so it wasn't blank), but the login form's submit
+  // handler was never attached, so clicking "로그인" did nothing at all
+  // (2026-09-08, Jeffrey: GitHub Pages 배포 후 "제출해도 에러도 없고 아무
+  // 반응 없음"). Waiting for DOMContentLoaded restores the original
+  // ordering guarantee regardless of whether this file ends up inlined,
+  // external+defer, or injected some other way -- do not remove this wait.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
+  } else {
+    run();
+  }
+
+  function run() {
   var firebaseConfig = {
     apiKey: "AIzaSyCTys1CFNFWjJZqP9mbH9Y_xSpIndyO-ew",
     authDomain: "megaline-htv-market-report.firebaseapp.com",
@@ -1551,6 +1578,7 @@ menuPanel.querySelectorAll('a[data-action]').forEach(a => {
         });
     });
   }
+  } // end run()
 })();
 </script>
 </body>
