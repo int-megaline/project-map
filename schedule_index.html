@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>프로젝트 별 상세 현황 대쉬보드</title>
+<style>html{visibility:hidden;}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>.auth-gate{
+  position:fixed; inset:0; z-index:9999;
+  background:var(--page); display:flex; align-items:center; justify-content:center; padding:24px;
+}
+.auth-card{
+  width:100%; max-width:360px; background:var(--panel); border:1px solid var(--line-strong);
+  border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px;
+}
+.auth-brand{ font-family:var(--font-sans); font-weight:700; font-size:20px; color:var(--ink); margin:0 0 4px; }
+.auth-sub{ font-family:var(--font-mono); font-size:12px; color:var(--muted); margin:0 0 24px; }
+.auth-card input{
+  width:100%; box-sizing:border-box; font-family:var(--font-sans); font-size:14px;
+  padding:10px 12px; border:1px solid var(--line-strong); border-radius:8px;
+  background:var(--page); color:var(--ink); margin-bottom:10px;
+}
+.auth-card input:focus{ outline:none; border-color:var(--cat-power); }
+.auth-card button[type="submit"]{
+  width:100%; font-family:var(--font-sans); font-weight:600; font-size:14px;
+  color:#fff; background:var(--cat-power); border:none; padding:10px; border-radius:8px;
+  cursor:pointer; margin-top:4px;
+}
+.auth-card button[type="submit"]:hover{ filter:brightness(0.92); }
+.auth-card button[type="submit"]:disabled{ opacity:0.6; cursor:default; }
+.auth-error{ font-size:12.5px; color:var(--warn); margin:10px 0 0; }
+.auth-forgot{ display:block; text-align:center; font-size:12.5px; color:var(--muted); margin-top:14px; text-decoration:none; }
+.auth-forgot:hover{ color:var(--cat-power); text-decoration:underline; }
+
+.auth-logout-btn{ color:var(--ink-soft); }
+.auth-logout-btn:hover{ background:var(--cat-power); border-color:var(--cat-power); color:#fff; }
+</style>
+<style>
+  :root{
+    color-scheme: light;
+    --font-sans: "IBM Plex Sans","Noto Sans KR",system-ui,-apple-system,sans-serif;
+    --font-mono: "IBM Plex Mono","Noto Sans KR",ui-monospace,monospace;
+
+    --page:        #e7ecf2;
+    --stage:       #f4f6f9;
+    --panel:       #ffffff;
+    --panel-2:     #eef2f6;
+    --line:        #dde3ea;
+    --line-strong: #c7d1dd;
+
+    --ink:         #16222f;
+    --ink-soft:    #3d4c5f;
+    --muted:       #74849a;
+    --muted-2:     #a5b2c2;
+
+    --cat-oil:     #eb6834;
+    --cat-oil-tint:   rgba(235,104,52,.14);
+    --cat-wind:    #1baf7a;
+    --cat-wind-tint:  rgba(27,175,122,.14);
+    --cat-power:   #2a78d6;
+    --cat-power-tint: rgba(42,120,214,.14);
+
+    --good:  #0ca35f;
+    --warn:  #b5750f;
+
+    --shadow: 0 20px 50px rgba(20,35,55,.16);
+    --radius: 14px;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --page:        #05090f;
+      --stage:       #0a1119;
+      --panel:       #0e1723;
+      --panel-2:     #121d2b;
+      --line:        #1c2c3f;
+      --line-strong: #2e4258;
+
+      --ink:         #eef3f8;
+      --ink-soft:    #b9c6d6;
+      --muted:       #6f849c;
+      --muted-2:     #4c5f76;
+
+      --cat-oil:     #d95926;
+      --cat-oil-tint:   rgba(217,89,38,.16);
+      --cat-wind:    #199e70;
+      --cat-wind-tint:  rgba(25,158,112,.18);
+      --cat-power:   #3987e5;
+      --cat-power-tint: rgba(57,135,229,.18);
+
+      --good:  #35c98f;
+      --warn:  #e0a54c;
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:        #05090f;
+    --stage:       #0a1119;
+    --panel:       #0e1723;
+    --panel-2:     #121d2b;
+    --line:        #1c2c3f;
+    --line-strong: #2e4258;
+
+    --ink:         #eef3f8;
+    --ink-soft:    #b9c6d6;
+    --muted:       #6f849c;
+    --muted-2:     #4c5f76;
+
+    --cat-oil:     #d95926;
+    --cat-oil-tint:   rgba(217,89,38,.16);
+    --cat-wind:    #199e70;
+    --cat-wind-tint:  rgba(25,158,112,.18);
+    --cat-power:   #3987e5;
+    --cat-power-tint: rgba(57,135,229,.18);
+
+    --good:  #35c98f;
+    --warn:  #e0a54c;
+    --shadow: 0 20px 60px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    min-height:100vh;
+  }
+
+  a{color:var(--cat-power);}
+
+  .wrap{max-width:1400px;margin:0 auto;padding:18px 18px 40px;}
+
+  /* ---------- header ---------- */
+  .head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    padding: 14px 20px;
+    margin-bottom:14px;
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+  .brand{display:flex;flex-direction:column;gap:2px;min-width:max-content;}
+  .brand .eyebrow{
+    font-family: var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    color: var(--muted);
+    text-transform:uppercase;
+  }
+  .brand h1{
+    margin:0;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:-.01em;
+    color: var(--ink);
+  }
+  .brand h1 .sub{
+    font-weight:400;
+    color: var(--ink-soft);
+    font-size:13px;
+    margin-left:8px;
+  }
+  .back-link{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11.5px;color:var(--muted);text-decoration:none;
+    padding:5px 10px;border-radius:8px;border:1px solid var(--line-strong);
+    white-space:nowrap;
+  }
+  .back-link:hover{color:var(--ink);border-color:var(--muted);}
+
+  .kpi-row{display:flex;gap:8px;}
+  .kpi{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:5px 14px;border-radius:10px;
+    background: var(--panel-2);border:1px solid var(--line);min-width:60px;
+  }
+  .kpi .n{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--ink);line-height:1.1;}
+  .kpi .l{font-size:9.5px;color:var(--muted);letter-spacing:.02em;margin-top:2px;white-space:nowrap;}
+
+  .head-spacer{flex:1 1 auto;}
+  .head-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+  .icon-btn{
+    width:34px;height:34px;border-radius:10px;flex:0 0 auto;
+    border:1px solid var(--line-strong);
+    background:var(--panel);color:var(--ink-soft);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:color .12s ease, border-color .12s ease;
+  }
+  .icon-btn:hover{color:var(--ink);border-color:var(--muted);}
+  .icon-btn svg{width:16px;height:16px;}
+  .icon-btn .moon{display:none;}
+  :root[data-theme="dark"] .icon-btn .sun{display:none;}
+  :root[data-theme="dark"] .icon-btn .moon{display:block;}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .icon-btn .sun{display:none;}
+    :root:not([data-theme="light"]) .icon-btn .moon{display:block;}
+  }
+
+  /* ---------- menu (hamburger) ---------- */
+  .menu-wrap{position:relative;}
+  .menu-panel{
+    position:absolute; top:calc(100% + 8px); right:0;
+    background:var(--panel);
+    border:1px solid var(--line-strong);
+    border-radius:10px;
+    padding:8px;
+    min-width:200px;
+    box-shadow: var(--shadow);
+    display:none;
+    z-index:60;
+  }
+  .menu-panel.open{display:block;}
+  .menu-panel a{
+    display:block;
+    padding:8px 10px;
+    border-radius:7px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    text-decoration:none;
+  }
+  .menu-panel a:hover{background:var(--panel-2);color:var(--ink);}
+  .menu-divider{height:1px;background:var(--line);margin:6px 2px;}
+
+  /* ---------- back-to-top ---------- */
+  .back-to-top{
+    position:fixed; right:22px; bottom:22px; z-index:120;
+    width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--line-strong);
+    color:var(--ink-soft);cursor:pointer;box-shadow:var(--shadow);
+    opacity:0;visibility:hidden;transform:translateY(8px);
+    transition:opacity .18s ease, transform .18s ease, visibility .18s;
+  }
+  .back-to-top.show{opacity:1;visibility:visible;transform:translateY(0);}
+  .back-to-top:hover{color:var(--ink);border-color:var(--muted);}
+  .back-to-top svg{width:18px;height:18px;}
+
+  /* ---------- filter bar ---------- */
+  .filter-bar{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    padding:10px 16px;
+    margin-bottom:14px;
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    background:var(--panel-2);
+    font-size:11.5px;
+  }
+  .filter-group{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+  .filter-title{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-right:1px;white-space:nowrap;}
+  .swatch{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:5px 10px 5px 8px;
+    border-radius:999px;
+    border:1px solid var(--line-strong);
+    background:var(--panel);
+    cursor:pointer;
+    user-select:none;
+    transition:opacity .15s ease, border-color .15s ease;
+    font-size:11px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .swatch:hover{border-color:var(--muted);}
+  .swatch.off{opacity:.35;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .dot.oil{background:var(--cat-oil);}
+  .dot.wind{background:var(--cat-wind);}
+  .dot.power{background:var(--cat-power);}
+  .filter-sep{width:1px;align-self:stretch;background:var(--line-strong);margin:0 2px;}
+  .search-input{
+    padding:6px 10px;
+    border-radius:8px;
+    border:1px solid var(--line-strong);
+    background:var(--panel);
+    color:var(--ink);
+    font-family:var(--font-sans);
+    font-size:12px;
+    min-width:180px;
+  }
+  .search-input::placeholder{color:var(--muted);}
+  .search-input:focus{outline:none;border-color:var(--muted);}
+
+  /* ---------- panels ---------- */
+  .panel{
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    background:var(--panel);
+    box-shadow: var(--shadow);
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .panel-head{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:14px 18px;border-bottom:1px solid var(--line);
+  }
+  .panel-title{font-size:14.5px;font-weight:700;color:var(--ink);}
+  .panel-sub{font-size:11px;color:var(--muted);}
+  .panel-head-spacer{flex:1 1 auto;}
+  .info-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:15px;height:15px;border-radius:50%;
+    background:var(--panel-2);border:1px solid var(--line-strong);
+    color:var(--muted);font-size:10px;font-style:normal;cursor:help;
+    position:relative;
+  }
+  .info-icon .info-pop{
+    display:none;position:absolute;bottom:calc(100% + 7px);right:-8px;
+    width:240px;background:var(--panel);border:1px solid var(--line-strong);
+    border-radius:9px;box-shadow:var(--shadow);padding:9px 11px;
+    font-size:11px;line-height:1.55;color:var(--ink-soft);cursor:auto;z-index:40;
+  }
+  .info-icon:hover .info-pop, .info-icon:focus .info-pop{display:block;}
+
+  /* ---------- Gantt ---------- */
+  .gantt-scroll{overflow-x:auto;overflow-y:auto;max-height:640px;}
+  .gantt-inner{min-width:900px;position:relative;}
+  .gantt-axis{
+    display:flex;position:sticky;top:0;z-index:30;
+    background:var(--panel);border-bottom:1px solid var(--line-strong);
+  }
+  .gantt-label-col{
+    flex:0 0 220px;padding:8px 14px;
+    font-family:var(--font-mono);font-size:9.5px;color:var(--muted);
+    letter-spacing:.06em;text-transform:uppercase;
+    position:sticky;left:0;background:var(--panel);z-index:3;
+    border-right:1px solid var(--line);
+    display:flex;align-items:center;
+  }
+  /* The sticky year-axis header (above) must always paint above every row's
+     (and every group header's) label column as the table scrolls vertically
+     inside .gantt-scroll -- otherwise a scrolled-up row's label column (also
+     position:sticky, but only for horizontal/left scrolling) ends up with a
+     HIGHER z-index than the axis and visually overlaps/covers it instead of
+     disappearing behind it (2026-09-08 bug: Jeffrey reported the header
+     getting covered while scrolling). Give the axis's own label cell the
+     highest z-index in this stack so it always wins. */
+  .gantt-axis .gantt-label-col{z-index:31;}
+  .gantt-years{flex:1 1 auto;position:relative;height:32px;}
+  .gantt-year-tick{
+    position:absolute;top:0;bottom:0;
+    font-family:var(--font-mono);font-size:10px;color:var(--muted);
+    display:flex;align-items:center;padding-left:4px;
+    border-left:1px solid var(--line);
+  }
+  .gantt-today-line{
+    position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--warn);z-index:5;
+  }
+  .gantt-today-label{
+    position:absolute;top:2px;font-family:var(--font-mono);font-size:9px;color:var(--warn);
+    white-space:nowrap;transform:translateX(4px);z-index:6;
+  }
+  .gantt-group-header{
+    display:flex;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--line);
+  }
+  .gantt-group-header .gantt-label-col{
+    background:var(--panel-2);position:sticky;left:0;
+    font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:none;letter-spacing:0;
+    gap:6px;
+  }
+  .gantt-row{display:flex;border-bottom:1px solid var(--line);}
+  .gantt-row:hover{background:var(--panel-2);}
+  .gantt-row .gantt-label-col{
+    background:inherit;font-family:var(--font-sans);font-size:11.5px;color:var(--ink);
+    text-transform:none;letter-spacing:0;flex-direction:column;align-items:flex-start;
+    justify-content:center;gap:2px;cursor:pointer;
+  }
+  .gantt-row:hover .gantt-label-col{background:var(--panel-2);}
+  .grow-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:192px;font-weight:500;}
+  .grow-meta{font-size:9.5px;color:var(--muted);font-family:var(--font-mono);}
+  .gantt-track{flex:1 1 auto;position:relative;height:38px;}
+  .gantt-bar{
+    position:absolute;top:9px;height:20px;border-radius:6px;
+    display:flex;align-items:center;
+    font-family:var(--font-mono);font-size:9.5px;color:#fff;
+    padding:0 7px;white-space:nowrap;overflow:hidden;cursor:pointer;
+    box-shadow:0 1px 2px rgba(0,0,0,.15);
+  }
+  .gantt-bar.cat-oil{background:var(--cat-oil);}
+  .gantt-bar.cat-wind{background:var(--cat-wind);}
+  .gantt-bar.cat-power{background:var(--cat-power);}
+  .gantt-bar.future{opacity:.55;border:1.5px dashed rgba(255,255,255,.7);}
+  .gantt-bar.unknown-end{
+    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.35) 0 6px, transparent 6px 12px);
+  }
+  .gantt-bar:hover, .gantt-bar.pinned{filter:brightness(1.08);outline:2px solid var(--ink);outline-offset:1px;}
+
+  /* ---------- tooltip (shared) ---------- */
+  .tooltip{
+    position:fixed;
+    width:min(300px, calc(100vw - 24px));
+    max-height: min(70vh, 420px);
+    overflow-y:auto;
+    background:var(--panel);
+    border:1px solid var(--line-strong);
+    border-radius:12px;
+    padding:13px 14px 12px;
+    box-shadow: var(--shadow);
+    opacity:0;
+    visibility:hidden;
+    transform: translateY(4px) scale(.97);
+    transition: opacity .14s ease, transform .14s ease;
+    z-index:200;
+    font-size:12px;
+  }
+  .tooltip.show{opacity:1;visibility:visible;transform:translateY(0) scale(1);}
+  .tt-cat{
+    display:inline-flex;align-items:center;gap:5px;
+    font-family:var(--font-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;
+  }
+  .tt-cat .dot{width:7px;height:7px;}
+  .tt-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.35;margin-bottom:4px;}
+  .tt-loc{font-size:11px;color:var(--ink-soft);margin-bottom:9px;}
+  .tt-row{display:flex;justify-content:space-between;gap:10px;font-size:11px;padding:5px 0;border-top:1px solid var(--line);}
+  .tt-row .k{color:var(--muted);white-space:nowrap;}
+  .tt-row .v{color:var(--ink-soft);text-align:right;}
+  .tt-badge{
+    display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+    font-size:10px;font-weight:500;background:var(--panel-2);border:1px solid var(--line-strong);color:var(--ink-soft);
+  }
+  .tt-stake{font-size:11px;color:var(--ink-soft);padding-top:9px;margin-top:5px;border-top:1px solid var(--line);}
+  .tt-stake .k{color:var(--muted);display:block;margin-bottom:5px;}
+  .tt-stake ul{margin:0;padding-left:16px;}
+  .tt-stake li{margin-bottom:3px;line-height:1.4;}
+  .tt-desc{font-size:11.5px;color:var(--ink-soft);line-height:1.55;margin-top:9px;padding-top:9px;border-top:1px solid var(--line);}
+  .tt-note{font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:8px;padding:7px 9px;background:var(--panel-2);border-radius:8px;}
+  .tt-src{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:11px;}
+  .tt-src a{text-decoration:none;font-weight:500;}
+  .tt-src a:hover{text-decoration:underline;}
+  .tt-close{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:4px;}
+  .tt-close:hover{color:var(--ink);}
+
+  /* ---------- 분야별 요약 ---------- */
+  .summary-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:14px;padding:16px 18px;}
+  .summary-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--panel-2);}
+  .summary-card .sc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .summary-card .sc-head .dot{width:11px;height:11px;}
+  .summary-card .sc-head .lbl{font-weight:700;font-size:13.5px;color:var(--ink);}
+  .sc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .sc-stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center;}
+  .sc-stat .num{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--ink);}
+  .sc-stat .lbl{font-size:9.5px;color:var(--muted);margin-top:2px;}
+  .sc-lead{font-size:11px;color:var(--ink-soft);display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line);}
+  .sc-lead b{color:var(--ink);font-family:var(--font-mono);}
+
+  /* ---------- 상세 카드 ---------- */
+  .card-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:14px;padding:16px 18px;}
+  .pcard{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--panel-2);display:flex;flex-direction:column;gap:8px;}
+  .pcard .pc-cat{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
+  .pcard .pc-name{font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.35;}
+  .pcard .pc-loc{font-size:11px;color:var(--ink-soft);}
+  .pcard .pc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+  .pc-tag{font-family:var(--font-mono);font-size:9.5px;padding:2px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line-strong);color:var(--muted);white-space:nowrap;}
+  .pc-tag.stage-active{color:var(--good);border-color:var(--good);}
+  .pc-tag.stage-future{color:var(--warn);border-color:var(--warn);}
+  .pcard .pc-sched{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 9px;}
+  .pcard .pc-sched .fid-type{font-size:9px;padding:1px 5px;border-radius:999px;background:var(--panel-2);color:var(--muted);}
+  .pcard .pc-stake{font-size:10.5px;color:var(--muted);line-height:1.55;}
+  .pcard .pc-stake b{color:var(--ink-soft);font-weight:600;}
+  .pcard .pc-desc{font-size:11.5px;color:var(--ink-soft);line-height:1.55;flex:1 1 auto;}
+  .pcard .pc-src{font-size:10.5px;padding-top:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .pcard .pc-src a{text-decoration:none;}
+  .pcard .pc-src a:hover{text-decoration:underline;}
+  .hidden-by-filter{display:none !important;}
+  .list-empty{padding:26px 12px;text-align:center;font-size:11.5px;color:var(--muted);display:none;}
+  .list-empty.show{display:block;}
+
+  .foot-note{font-size:10px;color:var(--muted-2);line-height:1.7;padding:14px 18px;}
+  .foot-note b{color:var(--muted);}
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width: 1180px){
+    .kpi-row{display:none;}
+    .summary-grid, .card-grid{grid-template-columns:repeat(2, 1fr);}
+  }
+  @media (max-width: 900px){
+    .wrap{padding:12px 10px 30px;}
+    .gantt-label-col{flex-basis:150px;}
+    .grow-name{max-width:120px;}
+    .summary-grid, .card-grid{grid-template-columns:1fr;padding:12px;}
+    .brand h1{font-size:15.5px;}
+    .brand h1 .sub{display:block;margin-left:0;margin-top:2px;font-size:11.5px;}
+  }
+  @media (max-width: 560px){
+    .head{padding:12px 14px;}
+    .brand .eyebrow{display:none;}
+    .filter-bar{padding:8px 12px;gap:8px 10px;}
+    .filter-title{width:100%;margin:0 0 -2px;}
+    .search-input{min-width:0;flex:1 1 100%;}
+    .panel-head{padding:12px 14px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="authGate" class="auth-gate">
+  <div class="auth-card">
+    <p class="auth-brand">MEGALINE</p>
+    <p class="auth-sub">프로젝트 별 상세 현황 대쉬보드 로그인</p>
+    <form id="authForm">
+      <input type="email" id="authEmail" placeholder="이메일" autocomplete="username" required>
+      <input type="password" id="authPassword" placeholder="비밀번호" autocomplete="current-password" required>
+      <button type="submit">로그인</button>
+      <p class="auth-error" id="authError" hidden></p>
+    </form>
+    <a href="#" id="authForgot" class="auth-forgot">비밀번호를 잊으셨나요?</a>
+  </div>
+</div>
+<script>
+  // Optimistic reveal: if this browser was signed in last time, show the page
+  // immediately instead of waiting for Firebase's async session check (that
+  // check still runs via auth-gate.js and will correct this if it was wrong).
+  (function () {
+    try {
+      if (localStorage.getItem("mgProjectMapAuthed") === "1") {
+        var g = document.getElementById("authGate");
+        if (g) g.style.display = "none";
+        document.documentElement.style.visibility = "visible";
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<div class="wrap" id="menuPanelAnchor">
+
+  <header class="head">
+    <div class="brand">
+      <div class="eyebrow">Megaline · Heavy-Lift Market Intelligence</div>
+      <h1>프로젝트 별 상세 현황 대쉬보드<span class="sub">예정·진행중 프로젝트 일정 및 상세 현황</span></h1>
+    </div>
+    <a class="back-link" href="./index.html" title="프로젝트 지도로 이동">
+      ← 프로젝트 지도
+    </a>
+    <div class="kpi-row">
+      <div class="kpi"><div class="n">51</div><div class="l">전체</div></div>
+      <div class="kpi"><div class="n">40</div><div class="l">진행중</div></div>
+      <div class="kpi"><div class="n">11</div><div class="l">예정</div></div>
+    </div>
+    <div class="head-spacer"></div>
+    <div class="head-controls">
+      <button class="icon-btn" id="themeToggle" aria-label="라이트/다크 모드 전환" title="라이트/다크 모드 전환">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></svg>
+      </button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="menuToggle" aria-label="메뉴" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        </button>
+        <div class="menu-panel" id="menuPanel" role="menu">
+          <a href="#" data-action="reset-filters" role="menuitem">필터 초기화</a>
+          <a href="#" data-action="only-active" role="menuitem">진행중 프로젝트만 보기</a>
+          <a href="#" data-action="only-future" role="menuitem">예정 프로젝트만 보기</a>
+          <div class="menu-divider"></div>
+          <a href="./index.html" role="menuitem">← 프로젝트 지도로 이동</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="filter-title">분야</span>
+      <span class="swatch" data-filter-cat="offshore_oil_gas"><span class="dot oil"></span>해양 오일·가스</span>
+      <span class="swatch" data-filter-cat="offshore_wind"><span class="dot wind"></span>해양 풍력</span>
+      <span class="swatch" data-filter-cat="onshore_power"><span class="dot power"></span>온쇼어 발전</span>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <span class="filter-title">단계</span>
+      <span class="swatch" data-filter-stage="active">진행중(건설·설치·FID완료)</span>
+      <span class="swatch" data-filter-stage="future">예정(계획·인허가)</span>
+    </div>
+    <div class="filter-sep"></div>
+    <input type="search" id="searchInput" class="search-input" placeholder="프로젝트·발주처·국가 검색" autocomplete="off">
+  </div>
+
+  <!-- ============ 상단: 프로젝트 일정표 (Gantt) ============ -->
+  <section class="panel" id="ganttPanel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">프로젝트 일정표</div>
+        <div class="panel-sub">FID(최종투자결정) ~ 가동(첫 생산/상업운전) 기간 · 분야별 색상 · 점선 테두리는 "예정" 단계</div>
+      </div>
+      <div class="panel-head-spacer"></div>
+      <span class="info-icon" tabindex="0">ⓘ<span class="info-pop">
+        FID 연도는 연도 단위 범위로 제공됩니다. 출처에 명시된 실제/발표 연도가 없는 경우
+        분야·구조형식별 통상 리드타임을 이용해 추정한 값이며(전체 51건 중 49건 추정),
+        막대를 클릭하면 각 값의 근거를 확인할 수 있습니다. 세로 점선은 오늘(2026년) 기준선입니다.
+      </span></span>
+    </div>
+    <div class="gantt-scroll">
+      <div class="gantt-inner" id="ganttInner"></div>
+    </div>
+    <div class="list-empty" id="ganttEmpty">선택한 필터에 해당하는 프로젝트가 없습니다.</div>
+  </section>
+
+  <!-- ============ 중단: 분야별 요약 ============ -->
+  <section class="panel" id="summaryPanel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">분야별 요약</div>
+        <div class="panel-sub">분야별 진행중/예정 건수 및 평균 FID→가동 리드타임</div>
+      </div>
+    </div>
+    <div class="summary-grid" id="summaryGrid"></div>
+  </section>
+
+  <!-- ============ 하단: 프로젝트 별 상세 자료 ============ -->
+  <section class="panel" id="detailPanel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">프로젝트 별 상세 자료</div>
+        <div class="panel-sub">개별 프로젝트 상세 정보 · 카드를 클릭하면 상세 팝업이 열립니다</div>
+      </div>
+    </div>
+    <div class="card-grid" id="cardGrid"></div>
+    <div class="list-empty" id="cardEmpty">선택한 필터에 해당하는 프로젝트가 없습니다.</div>
+  </section>
+
+  <div class="foot-note">
+    <b>출처.</b> 각 프로젝트는 업계 전문지·회사 발표 기사로 확인했으며 항목별 "출처 보기" 링크로 원문을 확인할 수 있습니다.
+    <b>FID 연도 산정 방식.</b> 출처 텍스트에 실제/발표 연도가 명시된 경우 이를 사용했고("실제"/"발표(목표)" 표기),
+    그렇지 않은 경우 분야·구조형식별 통상 리드타임(예: FPSO 신조 약 5년, FPSO 개조 약 3년, 고정식 해상풍력 약 4년,
+    부유식 해상풍력 약 6년, 원전 약 9년, 육상 LNG 약 5년, 석유화학 약 4년)을 목표 가동연도에서 역산하여 연도 단위로
+    추정했습니다("추정" 표기). 이는 시각화를 위한 참고용 추정치이며 개별 프로젝트에 대한 검증된 확정 일정이 아니므로,
+    실제 사업 판단 시 반드시 원출처 및 발주처 공식 발표를 직접 확인하시기 바랍니다.
+    <b>참여 기관.</b> "참여 기관" 항목(제작·건조·운송·설치·EPC 등)은 출처 기사에 명시적으로 언급된 회사만 반영한
+    것으로, 모든 프로젝트의 전체 참여사를 포괄하지 않으며 출처에 언급이 없는 경우 표시되지 않습니다.
+    데이터 갱신 기준일: 2026년 9월.
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<button class="back-to-top" id="backToTop" aria-label="맨 위로 이동" title="맨 위로 이동">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+const PROJECTS = [{"id": "sp0", "name": "FPSO P-84", "category": "offshore_oil_gas", "country": "Brazil", "region": "남미", "location_text": "브라질 산투스 분지 아타푸(Atapu) 유전", "client": "Petrobras (Shell, TotalEnergies, Petrogal Brasil, PPSA 파트너)", "stakeholders": [{"role": "제작(선체)", "name": "CIMC Raffles (중국)"}, {"role": "제작(톱사이드)", "name": "Seatrium 야드 (브라질 앙그라)"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "부유식 (FPSO)", "fid_year": 2024, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "페트로브라스 역대 최대·최초 올일렉트릭 FPSO로, 중국 CIMC Raffles에서 선체를, 브라질 앙그라(Seatrium 야드)에서 토프사이드 모듈을 제작 중이며 2025년 6월 토프사이드 강재 절단식이 열렸다. 완공 후 대형 토프사이드 모듈이 산투스 분지 아타푸 유전으로 운송·탑재될 예정이다.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/topside-construction-underway-for-petrobras-next-gen-fpso/"}, {"id": "sp1", "name": "FPSO Errea Wittu (Uaru 프로젝트)", "category": "offshore_oil_gas", "country": "Guyana", "region": "남미", "location_text": "가이아나 스타브룩 블록, 해안에서 약 200km 해상", "client": "ExxonMobil Guyana (MODEC 건조)", "stakeholders": [{"role": "건조", "name": "MODEC"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "부유식 (FPSO)", "fid_year": 2021, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "ExxonMobil의 가이아나 5번째 FPSO로 MODEC이 건조했으며 2026년 8월 가이아나 해상에 도착해 최종 계류·커미셔닝 중이다. 2026년 9월 가동 개시, 4분기 첫 생산을 목표로 하는 대형 해상 설치 프로젝트다.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/modecs-fpso-reaches-guyana-as-exxonmobils-fifth-oil-project-nears-start-up/"}, {"id": "sp2", "name": "Sparta 부유식 생산설비(FPS)", "category": "offshore_oil_gas", "country": "United States", "region": "북미", "location_text": "미국 멕시코만 가든뱅크스(Garden Banks) 959 블록, 루이지애나 남동 해상", "client": "Shell Offshore Inc. (Equinor 파트너)", "stakeholders": [{"role": "운송·설치", "name": "Subsea7"}], "stage_code": "fid", "stage_label": "FID 완료", "stage_bucket": "active", "feature_tag": "부유식 (FPS)", "fid_year": 2025, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 완료 단계이나 정확한 발표 연도가 출처에 명시되지 않아 최근 시점으로 추정", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "쉘·에퀴노르가 개발을 확정한 심해 프로젝트로, Subsea7이 부유식 생산설비(FPS)의 운송 및 설치 계약을 수주했다. 수심 최대 1,635m 해역에 2027년경 해상 설치 작업이 시작될 예정이다.", "source_name": "Offshore Magazine", "source_url": "https://www.offshore-mag.com/regional-reports/us-gulf-of-mexico/news/55280079/subsea7-to-install-floating-platform-for-deepwater-sparta-project"}, {"id": "sp3", "name": "GranMorgu FPSO", "category": "offshore_oil_gas", "country": "Suriname", "region": "남미", "location_text": "수리남 블록 58, 해안에서 약 150km 해상 (Sapakara/Krabdagu 유전)", "client": "TotalEnergies · APA Corporation", "stakeholders": [{"role": "설계·건조", "name": "SBM Offshore"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "부유식 (FPSO)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "SBM Offshore의 Fast4Ward 설계 기반 올일렉트릭 FPSO로 현재 건조 진척률 약 27%이며, 완공 후 대형 선체·토프사이드가 수리남 해상 블록 58로 예인·설치될 예정이다. 2028년 첫 생산을 목표로 한다.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/sbm-offshores-suriname-bound-fpso-for-totalenergies-12-2b-oil-project-starts-taking-shape/"}, {"id": "sp4", "name": "FPSO Kaminho", "category": "offshore_oil_gas", "country": "Angola", "region": "아프리카", "location_text": "앙골라 콴자 분지 블록 20/11, 루안다 남서 약 150km 해상", "client": "TotalEnergies Angola (Petronas Angola, Sonangol 파트너)", "stakeholders": [{"role": "프로젝트 총괄", "name": "Saipem"}, {"role": "개조(야드)", "name": "난퉁(Nantong) 야드, 중국"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "부유식 (FPSO, VLCC 개조)", "fid_year": 2025, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(3년)을 역산한 추정치", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "Saipem이 총괄하는 프로젝트로 중국 난퉁(Nantong) 야드에서 VLCC 탱커를 올일렉트릭 FPSO로 개조 중이며(2025년 4월 도크 입거), 개조 완료 후 앙골라 카메이아·골핀뉴 유전 해상으로 예인·설치된다. 2028년 첫 생산 목표.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/all-electric-fpso-for-totalenergies-angolan-project-starts-taking-shape-in-china/"}, {"id": "sp5", "name": "Venus 프로젝트", "category": "offshore_oil_gas", "country": "Namibia", "region": "아프리카", "location_text": "나미비아 오렌지 분지 블록 2913B, 남부 해상", "client": "TotalEnergies (Meren Energy, Impact Oil & Gas 파트너)", "stakeholders": [], "stage_code": "permitting", "stage_label": "인허가중", "stage_bucket": "future", "feature_tag": "부유식 (FPSO 예정)", "fid_year": 2028, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 이전 단계(인허가중) — 통상 리드타임 역산값이 이미 지났으므로 향후 시점으로 추정", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "FEED가 완료되고 주요 계약자 선정도 마무리된 실행준비 단계지만, 나미비아 정부와의 재정(세제) 협상 타결을 기다리며 FID가 지연되고 있다. FID 이후 약 15만 b/d급 FPSO 설치가 예정되어 있으며 2030년경 첫 생산이 목표다.", "source_name": "Offshore Magazine", "source_url": "https://www.offshore-mag.com/field-development/news/55398042/totalenergies-awaits-fiscal-accord-before-venus-fid-offshore-namibia"}, {"id": "sp6", "name": "FPSO Emem (Okwok 프로젝트)", "category": "offshore_oil_gas", "country": "Nigeria", "region": "아프리카", "location_text": "나이지리아 해상 오콕(Okwok) 유전, 에복(Ebok) 유전 인근", "client": "Oriental Energy Resources Ltd (OERL)", "stakeholders": [{"role": "개조(야드)", "name": "Drydocks World (두바이, UAE)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "부유식 (FPSO, 탱커 개조)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(3년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "두바이 Drydocks World에서 원유 탱커를 개조해 완성된 100만 배럴급 FPSO로, 개조가 완료되어 나이지리아 해상 오콕 유전 배치를 앞두고 있다. 2026년 1분기 첫 생산이 목표다.", "source_name": "Baird Maritime", "source_url": "https://www.bairdmaritime.com/offshore/vessels-rigs/fposfpsos/vessel-conversion-emem-large-capacity-fpso-to-be-deployed-off-nigeria"}, {"id": "sp7", "name": "Bonga Southwest Aparo 개발", "category": "offshore_oil_gas", "country": "Nigeria", "region": "아프리카", "location_text": "나이지리아 OML 118 블록, 해안에서 약 120km 해상, 기존 Bonga 유전 인근", "client": "Shell (SNEPCo) / NNPC", "stakeholders": [], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "부유식 (FPSO 신조 예정)", "fid_year": 2027, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 이전 단계(계획단계) — 통상 리드타임 역산값이 이미 지났으므로 향후 시점으로 추정", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "약 15만 b/d급 신규 대형 FPSO 설치가 계획된 200억 달러 규모 프로젝트로, 2026년 8월 NNPC·Shell·Esso·Agip이 OML 118 광구 생산물분배계약(PSC) 및 심해개발계약(DSA) 부속계약에 서명하며 FID에 한 걸음 더 다가섰다. FID 확정 시 대형 신조 FPSO 선체·토프사이드의 해상 운송·설치가 뒤따를 전망이다.", "source_name": "THISDAYLIVE", "source_url": "https://www.thisdaylive.com/2026/08/24/breaking-nnpc-shell-esso-agip-sign-psc-dsa-addenda-on-21bn-bonga-south-west-aparo-project/"}, {"id": "sp8", "name": "Yggdrasil (Valhall PWP–Fenris–Hugin) 개발 프로젝트", "category": "offshore_oil_gas", "country": "Norway", "region": "유럽", "location_text": "노르웨이 북해 남부, 노르웨이 대륙붕(NCS)", "client": "Aker BP (파트너: Equinor, PGNiG Upstream Norway)", "stakeholders": [{"role": "제작(톱사이드)", "name": "Aker Solutions Verdal 야드"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (재킷·톱사이드)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "Aker Solutions Verdal 야드에서 제작된 Hugin B 톱사이드가 2026년 7월 6일 사일어웨이했으며, 앞서 Fenris·Valhall PWP·Hugin A 재킷 등이 순차적으로 북해 현장까지 대형 바지·중량물 운송선으로 운송·설치됐다.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/north-sea-platform-topside-making-its-way-to-final-destination/"}, {"id": "sp9", "name": "Scarborough 가스전 개발 (FPU)", "category": "offshore_oil_gas", "country": "Australia", "region": "오세아니아", "location_text": "호주 서호주 카라타(Karratha) 앞바다 약 375km, 카나본 분지", "client": "Woodside Energy (운영사), JERA, LNG Japan", "stakeholders": [{"role": "제작·통합", "name": "중국 소재 야드(사명 미명시)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "부유식 (반잠수식 FPU)", "fid_year": 2021, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "약 7만톤 규모 세계 최대급 반잠수식 부유식 생산설비(FPU)로, 선체·톱사이드가 중국에서 제작·통합된 후 4,000해리 이상 예인되어 운송됐다. 2026년 하반기 첫 LNG 생산 목표.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/mega-12-5-billion-gas-project-makes-inroads-as-fpu-ends-its-miles-long-journey-in-australia/"}, {"id": "sp10", "name": "Marjan GOSP-4 생산 플랫폼", "category": "offshore_oil_gas", "country": "Saudi Arabia", "region": "중동", "location_text": "사우디아라비아 동부 아라비아만 마르잔(Marjan) 유전", "client": "Saudi Aramco (발주처), McDermott (제작·설치)", "stakeholders": [{"role": "제작·설치", "name": "McDermott (인도네시아 바탐 야드)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (플랫폼)", "fid_year": 2021, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2025, "prod_year_known": true, "bar_end": 2025, "description_kr": "무게 26,700톤으로 사우디 아람코 역사상 가장 크고 무거운 해상 원유·가스 분리 플랫폼(4단 구조)이 인도네시아 바탐 McDermott 야드에서 제작을 마치고 2025년 2월 사일어웨이했다. 초대형 바지선을 이용한 중량물 운송의 대표 사례.", "source_name": "Ocean Energy Resources", "source_url": "https://ocean-energyresources.com/2025/02/12/sail-away-of-marjan-gosp-4-production-platform/"}, {"id": "sp11", "name": "Hail and Ghasha 해상 사워가스 개발 프로젝트", "category": "offshore_oil_gas", "country": "United Arab Emirates", "region": "중동", "location_text": "아랍에미리트 아부다비 서부 해상 약 160km, 가샤 콘세션", "client": "ADNOC", "stakeholders": [{"role": "제작(재킷)", "name": "NMDC Energy"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "고정식 (인공섬·재킷)", "fid_year": 2024, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "10개의 인공섬을 건설하는 세계 최대 해상 사워가스 개발 프로젝트로, NMDC Energy가 제작한 강재 재킷이 로드아웃되어 중량물 운송선으로 현장까지 이송·설치됐다. 다수의 재킷·톱사이드가 순차적으로 운송될 예정.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/first-jacket-comes-to-slide-into-place-at-huge-offshore-gas-project/"}, {"id": "sp12", "name": "Block B – O Mon 가스전 개발 프로젝트", "category": "offshore_oil_gas", "country": "Vietnam", "region": "아시아", "location_text": "베트남 남서부 해상 약 433km", "client": "Petrovietnam (PTSC), Mitsui Oil Exploration(MOECO), PTTEP", "stakeholders": [], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "고정식 (CPP·LQP 플랫폼)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "베트남에서 두 번째로 큰 120억 달러 규모 해상 가스전 개발 프로젝트로, 중앙처리플랫폼(CPP)과 리빙쿼터플랫폼(LQP) 등 대형 해상 구조물 제작·설치가 진행 중이며 2026년 첫 가스 생산 계획.", "source_name": "The Investor (Vietnam)", "source_url": "https://theinvestor.vn/petrovietnam-to-complete-central-processing-platform-for-block-b-project-in-2025-d14634.html"}, {"id": "sp13", "name": "Manpatu 해상 가스전 개발 프로젝트", "category": "offshore_oil_gas", "country": "Indonesia", "region": "아시아", "location_text": "인도네시아 동칼리만탄 발릭파판(Balikpapan) 앞바다 약 35km, 남마하캄 해상", "client": "PT Pertamina Hulu Mahakam (PHM)", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (재킷)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "약 1,380톤 규모 신규 재킷·파일이 2026년 3월 로드아웃됐으며, 약 1,100톤 톱사이드는 2026년 4월 사일어웨이했다. 2027년 1분기 생산 개시 목표로, 데크캐리어/재킷 운송 바지가 투입되는 소형~중형 해상 가스전 개발 사례.", "source_name": "VOI (voi.id)", "source_url": "https://voi.id/en/economy/567208"}, {"id": "sp14", "name": "Hornsea 3", "category": "offshore_wind", "country": "United Kingdom", "region": "유럽", "location_text": "영국 북해, 요크셔 해안 약 120km 앞바다", "client": "Ørsted", "stakeholders": [{"role": "모노파일 제작", "name": "스페인 소재 제작사(사명 미명시)"}, {"role": "터빈 설치", "name": "Havfram"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "2026년 5월 첫 모노파일이 설치되며 기초 설치가 본격화된 세계 최대급 해상풍력 프로젝트(2.9GW). 스페인에서 제작된 대형 모노파일이 특수선으로 영국 현장까지 운송되며, Havfram이 터빈 설치를 담당한다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2026/05/14/first-monopile-installed-at-hornsea-3-offshore-wind-farm/"}, {"id": "sp15", "name": "Inch Cape", "category": "offshore_wind", "country": "United Kingdom", "region": "유럽", "location_text": "영국 스코틀랜드 앵거스 해안 앞바다, 북해", "client": "Inch Cape Offshore Limited (ESB / Red Rock Power)", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "1.08GW 규모로, 2026년 6월 기준 54기 모노파일 기초 설치가 전량 완료되어 터빈 설치 단계로 넘어가고 있다. 대형 모노파일 및 재킷 기초 운송이 중량물 운송선 수요를 발생시킨 대표 사례.", "source_name": "Energy Global", "source_url": "https://www.energyglobal.com/wind/03062026/all-monopiles-installed-at-inch-cape-offshore-wind-farm/"}, {"id": "sp16", "name": "Dogger Bank C", "category": "offshore_wind", "country": "United Kingdom", "region": "유럽", "location_text": "영국 북해 도거뱅크, 잉글랜드 동해안에서 약 130km 앞바다", "client": "SSE Renewables / Equinor", "stakeholders": [{"role": "터빈 공급", "name": "GE Vernova (Haliade-X)"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "세계 최대 해상풍력단지 도거뱅크 프로젝트의 세 번째 구역(C)으로, 2026년 상업가동을 목표로 대형 터빈(GE Haliade-X)과 모노파일 기초의 설치가 진행 중이다.", "source_name": "Energy Voice", "source_url": "https://www.energyvoice.com/renewables-energy-transition/wind/595345/dogger-bank-wind-farm-timeline/"}, {"id": "sp17", "name": "Nordlicht I", "category": "offshore_wind", "country": "Germany", "region": "유럽", "location_text": "독일 북해, 헬골란트 인근", "client": "Vattenfall", "stakeholders": [], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2024, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "독일 최대 해상풍력 프로젝트로 2026년 첫 모노파일이 설치되며 해상 건설이 본격 개시됐다. 에임스하벤(네덜란드) 항만을 기지로 대형 기초 구조물과 터빈 부품이 중량물 운송선으로 이송된다.", "source_name": "Vattenfall", "source_url": "https://group.vattenfall.com/press-and-media/newsroom/2026/vattenfall-starts-offshore-construction-of-germanys-largest-offshore-wind-project/"}, {"id": "sp18", "name": "He Dreiht", "category": "offshore_wind", "country": "Germany", "region": "유럽", "location_text": "독일 북해, 육지에서 약 90km 떨어진 해역", "client": "EnBW", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "960MW 규모 독일 최대 해상풍력단지로, 2026년 상반기 기준 전체 64기 터빈 중 절반 이상 설치가 완료됐다. 대형 나셀·블레이드·타워 구조물이 순차적으로 해상 설치되고 있다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2026/01/22/half-of-turbines-up-at-enbw-he-dreiht-offshore-wind-farm/"}, {"id": "sp19", "name": "Baltica 2", "category": "offshore_wind", "country": "Poland", "region": "유럽", "location_text": "폴란드 발트해, 우스트카·레바 해안 앞바다", "client": "Ørsted / PGE", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "1.5GW 규모로 EU 최대급 해상풍력 프로젝트 중 하나. 2026년 8월 기준 111기 모노파일 기초 설치가 완료되어 발트해 최초의 대형 해상풍력 설치 사업으로 꼽힌다.", "source_name": "Van Oord", "source_url": "https://www.vanoord.com/en/updates/baltica-2-reaches-major-milestone-completion-111-monopile-installations/"}, {"id": "sp20", "name": "Baltic Power", "category": "offshore_wind", "country": "Poland", "region": "유럽", "location_text": "폴란드 발트해, 레바·우스트카 인근 해역", "client": "Orlen Neptun / Northland Power", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "1.2GW 규모 폴란드 해상풍력 프로젝트로 2026년 2월 전체 모노파일 설치를 완료하고 터빈 설치 단계에 돌입했다. 폴란드 최초의 상업급 해상풍력단지로, 대형 기초구조물 운송에 중량물선이 투입됐다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2026/02/18/all-monopiles-in-at-1-2-gw-baltic-power-offshore-wind-farm/"}, {"id": "sp21", "name": "Hollandse Kust West VI", "category": "offshore_wind", "country": "Netherlands", "region": "유럽", "location_text": "네덜란드 북해, 노르트홀란트 해안 앞바다", "client": "Ecowende (Shell, Chubu Electric Power, Eneco 컨소시엄)", "stakeholders": [{"role": "모노파일 설치", "name": "Van Oord"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "2026년 4월 Van Oord가 전체 모노파일 설치를 완료했으며, 업계 최초의 저소음(silent) 모노파일 설치 공법이 적용됐다. 대형 기초 구조물의 항만-현장 간 운송에 중량물 운송선이 활용됐다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2026/04/10/van-oord-installs-all-monopiles-at-hollandse-kust-west-vi-completes-industrys-first-silent-installation/"}, {"id": "sp22", "name": "Greater Changhua 2b & 4 Offshore Wind Farm", "category": "offshore_wind", "country": "Taiwan", "region": "아시아", "location_text": "대만 창화현(Changhua County) 앞바다 35~60km 해상", "client": "Ørsted (TSMC向 PPA 공급)", "stakeholders": [{"role": "터빈 공급", "name": "Siemens Gamesa (SG 14-236)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (석션버킷 재킷)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "지멘스가메사 SG 14-236(14MW급) 터빈 66기 설치가 2026년 1월 완료되어 전기계통 시험이 진행 중이며, 아태지역 최초로 석션버킷 재킷 기초를 대규모 적용해 대형 재킷·타워·터빈 부품 해상 운송에 중량물 운송 자산이 투입되었다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2026/01/20/all-turbines-up-at-orsteds-920-mw-offshore-wind-farm-in-taiwan/"}, {"id": "sp23", "name": "Firefly (Bandibuli) Floating Offshore Wind", "category": "offshore_wind", "country": "South Korea", "region": "아시아", "location_text": "울산 앞바다 부유식 해상풍력 구역", "client": "Equinor", "stakeholders": [{"role": "터빈 공급", "name": "Siemens Gamesa (15MW급)"}], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "부유식 (플로팅)", "fid_year": 2027, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 이전 단계(계획단계) — 통상 리드타임 역산값이 이미 지났으므로 향후 시점으로 추정", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "Equinor가 개발하는 750MW급 부유식 해상풍력으로 지멘스가메사 15MW 터빈과 대형 부유식 플랫폼(기초 구조물)을 울산 앞바다에 설치할 예정이며, 향후 부유체 예인·운송에 중량물 운송선 수요가 예상된다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2024/12/19/south-korea-awards-nearly-1-9-gw-of-offshore-wind-capacity/"}, {"id": "sp24", "name": "Taean Offshore Wind Farm", "category": "offshore_wind", "country": "South Korea", "region": "아시아", "location_text": "충남 태안 앞바다 약 30km 해상", "client": "Vena Energy, Copenhagen Infrastructure Partners (CIP)", "stakeholders": [], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "고정식 (모노파일 예정)", "fid_year": 2027, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 이전 단계(계획단계) — 통상 리드타임 역산값이 이미 지났으므로 향후 시점으로 추정", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "Vena Energy와 CIP가 공동 개발하는 500MW급 고정식 해상풍력으로 2026년 말 착공을 목표로 하며, 모노파일 기초와 대형 터빈 부품의 해상 운송·설치가 예정되어 있다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2024/12/19/south-korea-awards-nearly-1-9-gw-of-offshore-wind-capacity/"}, {"id": "sp25", "name": "Oga–Katagami–Akita Offshore Wind Project", "category": "offshore_wind", "country": "Japan", "region": "아시아", "location_text": "일본 아키타현 오가시·가타가미시·아키타시 앞바다", "client": "JERA, J-POWER, Tohoku Electric Power, Itochu 컨소시엄", "stakeholders": [{"role": "터빈 공급", "name": "Vestas (V236)"}], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "고정식 (모노파일 예정)", "fid_year": 2027, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 이전 단계(계획단계) — 통상 리드타임 역산값이 이미 지났으므로 향후 시점으로 추정", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "315MW 규모로 일본 최초 15MW급(베스타스 V236) 터빈 21기를 설치하는 프로젝트로, 유럽·중국 밖에서는 처음으로 15MW급 초대형 터빈 부품이 운송·설치되는 사례다.", "source_name": "offshoreWIND.biz", "source_url": "https://www.offshorewind.biz/2026/05/29/deme-to-install-15-mw-vestas-turbines-at-japanese-offshore-wind-farm/"}, {"id": "sp26", "name": "Coastal Virginia Offshore Wind (CVOW)", "category": "offshore_wind", "country": "United States", "region": "북미", "location_text": "미국 버지니아주 버지니아비치 앞바다", "client": "Dominion Energy", "stakeholders": [{"role": "설치선", "name": "Charybdis (Dominion Energy 자체 건조·운용, Jones Act 준수)"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "미국 최대 규모(2.6GW) 해상풍력으로 176기 터빈 설치를 존스법 준수 설치선 Charybdis가 담당하고 있으며, 모노파일·타워·나셀·블레이드 등 초대형 부품의 지속적인 해상 운송이 진행 중이다.", "source_name": "Power Engineering", "source_url": "https://www.power-eng.com/renewables/wind-energy/dominion-says-coastal-virginia-offshore-wind-project-tops-70-complete-as-turbine-installation-enters-slower-final-stretch/"}, {"id": "sp27", "name": "Empire Wind 1", "category": "offshore_wind", "country": "United States", "region": "북미", "location_text": "미국 뉴욕주 롱아일랜드 앞바다 15~30마일 해상", "client": "Equinor", "stakeholders": [{"role": "설치(크레인선)", "name": "Thialf (Heerema)"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "810MW 규모로 세미서브형 크레인선 Thialf를 이용해 모노파일 54기 전량 설치를 완료했고 해상변전소 커미셔닝이 진행 중이며, 향후 터빈 나셀·블레이드 등 대형 부품 운송·설치가 이어질 예정이다.", "source_name": "Empire Wind (Equinor)", "source_url": "https://www.empirewind.com/offshore-installation/"}, {"id": "sp28", "name": "Star of the South Offshore Wind Farm", "category": "offshore_wind", "country": "Australia", "region": "오세아니아", "location_text": "호주 빅토리아주 깁스랜드(Gippsland), 배스해협", "client": "Star of the South (Copenhagen Infrastructure Partners 등)", "stakeholders": [], "stage_code": "permitting", "stage_label": "인허가중", "stage_bucket": "future", "feature_tag": "고정식 (예정, 형식 미정)", "fid_year": 2028, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "환경영향평가(EIA) 진행 중 — 통상 리드타임 기준으로는 이르나 초기 인허가 단계임을 반영해 보수적으로 추정", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "호주 최초의 해상풍력 프로젝트로 최대 2.2GW 규모를 목표로 환경영향평가(EPBC) 절차를 진행 중이며, 향후 착공 시 대형 터빈·기초 구조물의 해상 운송을 위한 중량물 운송선 수요가 발생할 예정이다.", "source_name": "ESD News", "source_url": "https://esdnews.com.au/major-step-for-australias-most-advanced-offshore-wind-project/"}, {"id": "sp29", "name": "Woodfibre LNG Terminal", "category": "onshore_power", "country": "Canada", "region": "북미", "location_text": "캐나다 브리티시컬럼비아주 스퀘미시(Squamish) 인근 우드파이버", "client": "Woodfibre LNG (Pacific Energy Corp / Enbridge JV)", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 모듈 (LNG 액화모듈)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "캐나다 우드파이버 LNG 터미널에 해외에서 사전 제작된 초대형 액화 모듈들이 중량물 운반선으로 해상 운송되어 계속 도착하고 있으며, 2026년 초 기준 공정률 약 65%에 도달했다.", "source_name": "Squamish Chief", "source_url": "https://www.squamishchief.com/local-news/see-woodfibre-lng-says-new-module-delivery-brings-project-to-65-complete-12025947"}, {"id": "sp30", "name": "Pluto LNG Train 2 (Scarborough Energy Project)", "category": "onshore_power", "country": "Australia", "region": "오세아니아", "location_text": "호주 서호주주 카라타(Karratha) 버럽 반도", "client": "Woodside Energy (Bechtel EPC)", "stakeholders": [{"role": "EPC", "name": "Bechtel"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 모듈 (LNG 공정모듈)", "fid_year": 2021, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "스카버러 가스전과 연계된 플루토 LNG 두 번째 액화 트레인(Train 2)의 최종 대형 공정 모듈들이 벡텔 주도로 해상 운송되어 부지에 도착, 설치가 마무리 단계에 있다.", "source_name": "Bechtel", "source_url": "https://www.bechtel.com/press-releases/final-pluto-train-2-modules-arrive-for-scarborough-energy-project/"}, {"id": "sp31", "name": "Kudankulam Nuclear Power Plant Unit 5", "category": "onshore_power", "country": "India", "region": "아시아", "location_text": "인도 타밀나두주 쿠단쿨람(Kudankulam)", "client": "NPCIL (인도원자력발전공사) / Rosatom", "stakeholders": [{"role": "제작(원자로 압력용기)", "name": "Rosatom 계열 제작사 (러시아)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 중량기기 (원자로 압력용기)", "fid_year": 2017, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(9년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "인도-러시아 협력으로 건설 중인 쿠단쿨람 원전 5호기에 320톤급 원자로 압력용기가 설치되었으며, 이런 초대형 원자로 기기는 러시아에서 제작되어 해상 중량물 운송으로 현지에 반입된다.", "source_name": "World Nuclear News", "source_url": "https://www.world-nuclear-news.org/articles/reactor-pressure-vessel-installed-at-indian-nuclear-plant"}, {"id": "sp32", "name": "Lufeng Nuclear Power Plant Unit 6", "category": "onshore_power", "country": "China", "region": "아시아", "location_text": "중국 광둥성 루펑(陸豐)", "client": "China General Nuclear (CGN)", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 중량기기 (원자로 압력용기)", "fid_year": 2020, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(9년)을 역산한 추정치", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "루펑 원전 6호기에 원자로 압력용기가 2026년 초 설치되었으며, 격납건물 돔 등 초중량 원자로 부품들이 순차적으로 현지에 반입되며 건설이 진행되고 있다.", "source_name": "World Nuclear News", "source_url": "https://www.world-nuclear-news.org/articles/reactor-vessel-installed-at-lufeng-6"}, {"id": "sp33", "name": "Hinkley Point C Nuclear Power Station", "category": "onshore_power", "country": "United Kingdom", "region": "유럽", "location_text": "영국 잉글랜드 서머싯주 힝클리포인트", "client": "EDF Energy / NNB Generation Company", "stakeholders": [{"role": "제작(원자로 압력용기)", "name": "프랑스 소재 제작사(사명 미명시)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 중량기기 (원자로 압력용기)", "fid_year": 2021, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(9년)을 역산한 추정치", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "프랑스에서 제작된 500톤급 원자로 압력용기가 초중량물 운반선을 통해 해상 운송되어 힝클리포인트 C 부지에 도착, 2호기 설치 작업이 진행되고 있다.", "source_name": "World Nuclear News", "source_url": "https://www.world-nuclear-news.org/articles/reactor-vessel-completed-for-hinkley-point-c-second-unit"}, {"id": "sp34", "name": "El Dabaa Nuclear Power Plant", "category": "onshore_power", "country": "Egypt", "region": "아프리카", "location_text": "이집트 지중해 연안 엘다바(El Dabaa)", "client": "이집트 원자력발전청(NPPA) / Rosatom", "stakeholders": [{"role": "제작(원자로 압력용기)", "name": "Rosatom (러시아)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 중량기기 (원자로 압력용기)", "fid_year": 2019, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(9년)을 역산한 추정치", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "이집트 최초의 원전인 엘다바 원전에 러시아 로사톰이 제작한 원자로 압력용기가 단일 원전 화물로는 역대 최대 규모로 해상 운송되어 도착, 1·2호기 기기 설치가 진행 중이다.", "source_name": "World Nuclear News", "source_url": "https://www.world-nuclear-news.org/articles/largest-ever-shipment-for-a-single-nuclear-plant"}, {"id": "sp35", "name": "Mozambique LNG (Afungi)", "category": "onshore_power", "country": "Mozambique", "region": "아프리카", "location_text": "모잠비크 카부델가두주 아풍기(Afungi) 반도", "client": "TotalEnergies (Mozambique LNG 컨소시엄)", "stakeholders": [], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "육상 모듈 (LNG 액화모듈)", "fid_year": 2024, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "200억 달러 규모 모잠비크 LNG 온쇼어 액화플랜트가 보안 문제로 인한 4년간의 불가항력 사태를 해제하고 2026년 1월 건설을 재개했으며, 향후 대형 액화 모듈들의 해상 운송이 본격화될 전망이다.", "source_name": "Engineering News-Record (ENR)", "source_url": "https://www.enr.com/articles/62538-20b-mozambique-lng-project-restarts-construction-after-four-year-security-halt"}, {"id": "sp36", "name": "INEOS Project ONE (Antwerp Ethane Cracker)", "category": "onshore_power", "country": "Belgium", "region": "유럽", "location_text": "벨기에 안트베르펜(Antwerp)항", "client": "INEOS", "stakeholders": [], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "육상 모듈 (석유화학 공정모듈)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "유럽 최대 규모 석유화학 신설 프로젝트인 이네오스 프로젝트원 에탄크래커에 7,000톤급 초대형 공정 모듈이 수개월 지연된 끝에 2026년 7월 해상 운송으로 도착, 모듈 설치가 마무리되고 있다.", "source_name": "Breakbulk News", "source_url": "https://breakbulk.news/antwerp-receives-7000-tonne-project-one-module-for-ineos-ethane-cracker/"}, {"id": "sp37", "name": "Amiral Petrochemical Complex (SATORP)", "category": "onshore_power", "country": "Saudi Arabia", "region": "중동", "location_text": "사우디아라비아 주바일(Jubail) 사토르프(SATORP) 정유단지", "client": "Saudi Aramco / TotalEnergies (SATORP JV)", "stakeholders": [], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "육상 모듈 (석유화학 공정모듈)", "fid_year": 2023, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "사토르프 정유단지에 통합되는 110억 달러 규모 아미랄 석유화학 콤플렉스가 EPC 계약에 따라 건설되고 있으며, 대형 나프타 크래커 및 폴리머 설비의 초중량 모듈이 해상으로 반입될 예정이다.", "source_name": "TotalEnergies", "source_url": "https://totalenergies.com/company/projects/oil/amiral-petrochemical-complex-satorp-saudi-arabia"}, {"id": "sp38", "name": "SEAP-I / SEAP-II FPSO 프로젝트 (P-81, P-87)", "category": "offshore_oil_gas", "country": "Brazil", "region": "남미", "location_text": "브라질 세르지페-알라고아스 분지(Sergipe-Alagoas Basin), 해안에서 약 80km 해상", "client": "Petrobras", "stakeholders": [{"role": "건조", "name": "SBM Offshore (네덜란드)"}], "stage_code": "fid", "stage_label": "FID 완료", "stage_bucket": "active", "feature_tag": "부유식 (FPSO)", "fid_year": 2025, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 완료 단계이나 정확한 발표 연도가 출처에 명시되지 않아 최근 시점으로 추정", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "세르지페-알라고아스 분지 심해 유전 개발을 위한 FPSO 2기(P-81, P-87) 프로젝트로 총 투자액이 약 120억 달러에 달한다. 네덜란드 SBM Offshore가 두 선체 건조를 모두 수주했으며, 각 FPSO는 일산 12만 배럴 원유 처리 능력을 갖출 예정이다. 초대형 토프사이드 모듈의 해상 운송·설치 수요가 예상된다.", "source_name": "Offshore Energy", "source_url": "https://www.offshore-energy.biz/petrobras-bringing-12-billion-oil-gas-project-pair-to-life-with-sbm-offshore-on-fpso-duty-for-both/"}, {"id": "sp39", "name": "Hammerhead FPSO 프로젝트", "category": "offshore_oil_gas", "country": "Guyana", "region": "남미", "location_text": "가이아나 해상 스타브룩 광구, Hammerhead 유전(엑슨모빌 가이아나 7번째 개발사업)", "client": "ExxonMobil Guyana", "stakeholders": [{"role": "EPC(설계·조달·건조)", "name": "MODEC"}], "stage_code": "fid", "stage_label": "FID 완료", "stage_bucket": "active", "feature_tag": "부유식 (FPSO)", "fid_year": 2025, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 완료 단계이나 정확한 발표 연도가 출처에 명시되지 않아 최근 시점으로 추정", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "엑슨모빌이 가이아나에서 추진하는 7번째 해상 개발사업으로 총 사업비 68억 달러, 일산 15만 배럴 규모의 신조 FPSO가 투입된다. MODEC이 FPSO 설계·조달·건조 전 범위를 수주했으며 2029년 생산 개시가 목표다.", "source_name": "JPT (SPE)", "source_url": "https://jpt.spe.org/exxonmobil-reaches-fid-on-6-8-billion-hammerhead-field-offshore-guyana"}, {"id": "sp40", "name": "Atapu-2 & Sépia-2 FPSO 프로젝트", "category": "offshore_oil_gas", "country": "Brazil", "region": "남미", "location_text": "브라질 산투스 분지(Santos Basin) 프리솔트 해상 유전", "client": "Petrobras / TotalEnergies 외 컨소시엄", "stakeholders": [{"role": "건조", "name": "Seatrium (싱가포르)"}], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "부유식 (FPSO)", "fid_year": 2024, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2029, "prod_year_known": true, "bar_end": 2029, "description_kr": "산투스 분지 프리솔트 유전 Atapu와 Sépia에 각각 투입될 대형 FPSO 2기 프로젝트로, 싱가포르 Seatrium이 총 81.6억 달러 규모로 선체 건조를 수주했다. 각 FPSO는 일산 22.5만 배럴 원유 처리 능력을 갖추며 2029년 생산 개시를 목표로 한다.", "source_name": "nsenergybusiness", "source_url": "https://www.nsenergybusiness.com/company-news/petrobras-and-partners-take-fid-on-atapu-2-and-sepia-2-projects-in-brazil/"}, {"id": "sp41", "name": "Delfin FLNG 프로젝트", "category": "offshore_oil_gas", "country": "United States", "region": "북미", "location_text": "미국 루이지애나주 앞바다, 멕시코만 심해 부유식 LNG 터미널", "client": "Delfin Midstream", "stakeholders": [{"role": "건조(FLNG 설비)", "name": "삼성중공업 · Black & Veatch"}], "stage_code": "fid", "stage_label": "FID 완료", "stage_bucket": "active", "feature_tag": "부유식 (FLNG)", "fid_year": 2025, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 완료 단계이나 정확한 발표 연도가 출처에 명시되지 않아 최근 시점으로 추정", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "미국 최초의 부유식 LNG(FLNG) 수출 프로젝트로 연산 440만 톤 규모이며 GIP·MOL·Vitol 등이 투자에 참여했다. 삼성중공업이 Black & Veatch와 함께 FLNG 설비 건조를 수주해 국내 조선·중량물 업계와도 밀접히 연관되며, 2030년 첫 LNG 생산이 목표다.", "source_name": "LNG Industry", "source_url": "https://www.lngindustry.com/floating-lng/04062026/delfin-midstream-announces-fid-for-first-flng-vessel/"}, {"id": "sp42", "name": "Nordlicht II", "category": "offshore_wind", "country": "Germany", "region": "유럽", "location_text": "독일 북해, 헬골란트 인근 (Nordlicht I 인접 해상)", "client": "Vattenfall", "stakeholders": [], "stage_code": "fid", "stage_label": "FID 완료", "stage_bucket": "active", "feature_tag": "고정식 (모노파일)", "fid_year": 2026, "fid_year_type": "actual", "fid_year_type_label": "실제", "fid_note": "2026년 1월 최종투자결정(FID) 완료가 공식 발표됨", "prod_year": 2028, "prod_year_known": true, "bar_end": 2028, "description_kr": "Nordlicht I과 함께 독일 최대 해상풍력 클러스터(합산 1.6GW 이상)를 이루는 프로젝트로 2026년 1월 최종투자결정이 완료됐다. 건설은 2026년 시작되며 Nordlicht I보다 약 1년 늦게 모노파일 설치가 진행될 예정으로, 두 단지 모두 2028년 상업 운전 진입을 목표로 한다.", "source_name": "EuropaWire / Vattenfall", "source_url": "https://news.europawire.eu/vattenfall-confirms-full-fid-for-nordlicht-i-and-ii-as-germanys-largest-offshore-wind-project-moves-forward/eu-press-release/2026/01/14/15/09/58/167894/"}, {"id": "sp43", "name": "Vanguard East Offshore Wind Farm", "category": "offshore_wind", "country": "United Kingdom", "region": "유럽", "location_text": "영국 노퍽 해안에서 약 45km 이상 떨어진 북해", "client": "RWE / KKR", "stakeholders": [{"role": "터빈 공급", "name": "Vestas"}], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "고정식 (모노파일)", "fid_year": 2026, "fid_year_type": "announced", "fid_year_type_label": "발표(목표)", "fid_note": "2026년 여름 최종투자결정을 목표로 한다고 발표됨(미확정)", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "터빈 92기(15MW급), 총 1,380MW 규모의 대형 해상풍력 프로젝트로 RWE와 KKR이 공동 개발한다. 2026년 3월 Vestas와 터빈 공급계약을 체결했으며, 2026년 여름 최종투자결정을 목표로 대규모 해상 건설 캠페인을 준비 중이다. 완공 시 약 150만 가구에 전력 공급이 가능하다.", "source_name": "RWE", "source_url": "https://www.rwe.com/en/press/rwe-offshore-wind-gmbh/2026-03-10-rwe-and-vestas-agree-turbine-supply-agreement-for-vanguard-east-offshore-wind-farm/"}, {"id": "sp44", "name": "Caledonia Offshore Wind Farm", "category": "offshore_wind", "country": "United Kingdom", "region": "유럽", "location_text": "영국 스코틀랜드 애버딘셔 앞바다, 북해", "client": "Ocean Winds", "stakeholders": [], "stage_code": "permitting", "stage_label": "인허가중", "stage_bucket": "future", "feature_tag": "고정식 (모노파일)", "fid_year": 2028, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "2026년 7월 최종개발승인(인허가) 확보 — 착공/FID 시점은 통상 리드타임 기준 추정, 목표 가동연도 미정", "prod_year": null, "prod_year_known": false, "bar_end": 2033, "description_kr": "총 2GW 규모의 스코틀랜드 대형 해상풍력 프로젝트로 2026년 7월 스코틀랜드 정부의 최종 개발 승인을 확보했다. 2단계로 나눠 건설될 가능성이 검토되고 있으며, 아직 최종투자결정 전 단계로 향후 대형 기초구조물·터빈의 해상 운송 수요가 발생할 전망이다.", "source_name": "Offshore Wind", "source_url": "https://www.offshorewind.biz/2026/07/20/scottish-government-greenlights-2-gw-caledonia-offshore-wind-farm/"}, {"id": "sp45", "name": "Hai Long Offshore Wind Farm", "category": "offshore_wind", "country": "Taiwan", "region": "아시아", "location_text": "대만해협, 창화(彰化) 해안에서 45~70km 해상", "client": "Mitsui & Co. / Northland Power / Gentari", "stakeholders": [{"role": "터빈 공급", "name": "Siemens Gamesa (14MW급)"}], "stage_code": "installation", "stage_label": "설치중", "stage_bucket": "active", "feature_tag": "고정식 (재킷)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(4년)을 역산한 추정치", "prod_year": 2026, "prod_year_known": true, "bar_end": 2026, "description_kr": "1,044MW 규모(Hai Long 2A/2B/3 합산)의 대만 최대급 해상풍력단지로 지멘스가메사 14MW급 터빈이 투입된다. 2026년 5월 첫 발전을 달성했으며 NT$550억(약 17억 달러) 규모 금융을 확보해 2026년 내 완공을 목표로 터빈 설치가 진행 중이다.", "source_name": "Hai Long Offshore Wind", "source_url": "https://hailongoffshorewind.com/en/FirstPowerCeremony"}, {"id": "sp46", "name": "Nigeria LNG Train 7", "category": "onshore_power", "country": "Nigeria", "region": "아프리카", "location_text": "나이지리아 보니 아일랜드(Bonny Island) LNG 터미널", "client": "Nigeria LNG Limited (NLNG)", "stakeholders": [], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "육상 모듈 (LNG 액화모듈)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2027, "prod_year_known": true, "bar_end": 2027, "description_kr": "나이지리아 보니 아일랜드 기존 LNG 터미널에 8번째 트레인을 추가하는 프로젝트로 완공 시 전체 생산능력이 35% 증대된다. 2026년 기준 공정률 90%를 넘어서며 2027년 가동을 목표로 대형 액화모듈 설치가 마무리 단계에 있다.", "source_name": "The Sun (Nigeria)", "source_url": "https://thesun.ng/nlng-train-7-hits-90-completion-sets-2027-date/"}, {"id": "sp47", "name": "Ninh Thuan 1 원자력발전소", "category": "onshore_power", "country": "Vietnam", "region": "아시아", "location_text": "베트남 닌투언성 투언남군 프억진 코뮌", "client": "EVN (베트남전력공사) / Rosatom", "stakeholders": [{"role": "원자로 공급", "name": "Rosatom (러시아, VVER-1200)"}], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "육상 중량기기 (원자로 압력용기)", "fid_year": 2027, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "FID 이전 단계(계획단계) — 통상 리드타임 역산값이 이미 지났으므로 향후 시점으로 추정", "prod_year": 2030, "prod_year_known": true, "bar_end": 2030, "description_kr": "2009년 승인 후 2016년 중단됐던 베트남 최초 원전 사업으로, 2024년 국회 재개 승인에 이어 2026년 3월 러시아와 정부간 협력협정을 체결했다. 러시아형 VVER-1200 원자로 2기가 상트페테르부르크 레닌그라드 원전을 참조 설계로 도입되며, 2030년 말 완공이 목표다.", "source_name": "World Nuclear News", "source_url": "https://www.world-nuclear-news.org/articles/vietnam-russia-intergovernmental-agreement-on-new-nuclear"}, {"id": "sp48", "name": "North Field West LNG 확장 프로젝트", "category": "onshore_power", "country": "Qatar", "region": "중동", "location_text": "카타르 라스라판 산업도시(Ras Laffan Industrial City)", "client": "QatarEnergy", "stakeholders": [], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "육상 모듈 (LNG 액화모듈)", "fid_year": 2026, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(5년)을 역산한 추정치", "prod_year": 2031, "prod_year_known": true, "bar_end": 2031, "description_kr": "북부가스전(North Field) 3차 확장사업으로 연산 1,600만 톤의 LNG 생산능력이 추가되며 완공 시 카타르 총 생산능력이 연 1억 4,200만 톤으로 늘어난다. 투자 규모는 170억~180억 달러이며, 2026년 기준 다수의 EPC 계약이 진행 중이나 생산 개시 목표는 2031년으로 지연된 상태다.", "source_name": "Natural Gas Intelligence", "source_url": "https://naturalgasintel.com/news/qatarenergys-north-field-west-lng-project-startup-slips-to-2031/"}, {"id": "sp49", "name": "Gorakhpur Haryana 원자력발전소 (GHAVP)", "category": "onshore_power", "country": "India", "region": "아시아", "location_text": "인도 하리아나주 파테하바드 지구 고락푸르", "client": "NPCIL (인도원자력발전공사)", "stakeholders": [], "stage_code": "construction", "stage_label": "건설중", "stage_bucket": "active", "feature_tag": "육상 중량기기 (원자로 압력용기)", "fid_year": 2022, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "목표연도 기준 통상 리드타임(9년)을 역산한 추정치", "prod_year": 2031, "prod_year_known": true, "bar_end": 2031, "description_kr": "인도 자체 개발 IPHWR-700(700MW급 가압중수로) 2기를 건설하는 전략 원전 프로젝트로 2026년 주요 공정 마일스톤을 달성하며 정부 고위 인사의 현장 점검이 이어지고 있다. 대형 원자로 압력용기·중수로 부품의 육상 중량물 운송 수요가 발생하며 2031년 가동이 목표다.", "source_name": "World Nuclear News", "source_url": "https://www.world-nuclear-news.org/articles/indias-gorakhpur-slated-for-2031-operation"}, {"id": "sp50", "name": "Cascade Advanced Energy Facility (Xe-100 SMR)", "category": "onshore_power", "country": "United States", "region": "북미", "location_text": "미국 워싱턴주 리치랜드, 컬럼비아 발전소 인근", "client": "Energy Northwest / Amazon / X-energy", "stakeholders": [{"role": "SMR 모듈 설계·제작", "name": "X-energy"}], "stage_code": "planned", "stage_label": "계획단계", "stage_bucket": "future", "feature_tag": "육상 중량기기 (SMR 모듈)", "fid_year": 2029, "fid_year_type": "estimated", "fid_year_type_label": "추정", "fid_note": "타당성조사 단계 — SMR 통상 리드타임 기준 추정, 목표 가동연도 미정", "prod_year": null, "prod_year_known": false, "bar_end": 2034, "description_kr": "아마존이 파트너로 참여하는 소형모듈원자로(SMR) 프로젝트로 X-energy의 고온가스냉각 Xe-100 모듈(80MW×4기, 총 320MW)을 초기 배치하며 최대 12기(960MW)까지 확장 가능하도록 설계됐다. 현재 타당성 조사 단계이나, 향후 원자로 모듈의 육상 중량물 운송 수요로 이어질 전망이다.", "source_name": "Energy Northwest", "source_url": "https://www.energy-northwest.com/energy-projects/cascade-advanced-energy-facility/"}];
+const CAT_META = {
+  offshore_oil_gas: {label:'해양 오일·가스', cls:'oil'},
+  offshore_wind:    {label:'해양 풍력',       cls:'wind'},
+  onshore_power:    {label:'온쇼어 발전',     cls:'power'},
+};
+const TIMELINE_MIN = 2016;
+const TIMELINE_MAX = 2034;
+const CURRENT_YEAR = 2026;
+
+const activeCats = new Set(Object.keys(CAT_META));
+const activeStages = new Set(['active','future']);
+let searchQuery = '';
+let pinnedId = null;
+
+const tooltip = document.getElementById('tooltip');
+const ganttInner = document.getElementById('ganttInner');
+const ganttEmpty = document.getElementById('ganttEmpty');
+const cardGrid = document.getElementById('cardGrid');
+const cardEmpty = document.getElementById('cardEmpty');
+
+function yearToPct(y){
+  return ((y - TIMELINE_MIN) / (TIMELINE_MAX - TIMELINE_MIN)) * 100;
+}
+function matchesSearch(p, q){
+  if(!q) return true;
+  const hay = `${p.name} ${p.country} ${p.client} ${p.location_text} ${p.feature_tag||''}`.toLowerCase();
+  return hay.includes(q);
+}
+function visibleProjects(){
+  return PROJECTS.filter(p => activeCats.has(p.category) && activeStages.has(p.stage_bucket) && matchesSearch(p, searchQuery));
+}
+
+// ---------- tooltip (shared by gantt bars + detail cards) ----------
+function showDetail(p, anchorEl){
+  const cat = CAT_META[p.category];
+  const srcHtml = p.source_url
+    ? `<a href="${p.source_url}" target="_blank" rel="noopener" style="color:var(--cat-${cat.cls})">${p.source_name} 출처 보기 ↗</a>`
+    : `<span style="color:var(--muted)">${p.source_name} (링크 미확인)</span>`;
+  const prodLabel = p.prod_year_known ? `${p.prod_year}년(목표)` : '미정';
+  const stakeHtml = (p.stakeholders && p.stakeholders.length)
+    ? `<div class="tt-stake"><span class="k">참여 기관 (발주처 외)</span><ul>${p.stakeholders.map(s => `<li><b>${s.role}</b> · ${s.name}</li>`).join('')}</ul></div>`
+    : '';
+
+  tooltip.innerHTML = `
+    <button class="tt-close" id="ttClose" aria-label="닫기">&times;</button>
+    <div class="tt-cat"><span class="dot ${cat.cls}"></span>${cat.label}</div>
+    <div class="tt-name">${p.name}</div>
+    <div class="tt-loc">${p.country}${p.location_text ? ' · ' + p.location_text : ''} (${p.region})</div>
+    <div class="tt-row"><span class="k">발주처</span><span class="v">${p.client}</span></div>
+    <div class="tt-row"><span class="k">단계</span><span class="v"><span class="tt-badge">${p.stage_label}</span></span></div>
+    <div class="tt-row"><span class="k">FID 연도</span><span class="v">${p.fid_year}년 <span class="tt-badge">${p.fid_year_type_label}</span></span></div>
+    <div class="tt-row"><span class="k">가동 목표연도</span><span class="v">${prodLabel}</span></div>
+    ${p.feature_tag ? `<div class="tt-row"><span class="k">구조형식</span><span class="v">${p.feature_tag}</span></div>` : ''}
+    ${stakeHtml}
+    <div class="tt-desc">${p.description_kr}</div>
+    <div class="tt-note"><b>FID 연도 근거:</b> ${p.fid_note}</div>
+    <div class="tt-src">${srcHtml}</div>
+  `;
+  document.getElementById('ttClose').addEventListener('click', (e) => { e.stopPropagation(); hideDetail(); });
+
+  const rect = anchorEl ? anchorEl.getBoundingClientRect() : {left: window.innerWidth/2 - 150, bottom: window.innerHeight/2, top: window.innerHeight/2};
+  tooltip.classList.add('show');
+  const ttW = tooltip.offsetWidth || 300;
+  const ttH = tooltip.offsetHeight || 300;
+  let left = rect.left;
+  let top = rect.bottom + 8;
+  if(left + ttW > window.innerWidth - 10) left = window.innerWidth - ttW - 10;
+  if(left < 10) left = 10;
+  if(top + ttH > window.innerHeight - 10) top = Math.max(10, rect.top - ttH - 8);
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+  pinnedId = p.id;
+  document.querySelectorAll('.gantt-bar.pinned').forEach(el => el.classList.remove('pinned'));
+  const bar = ganttInner.querySelector(`[data-id="${p.id}"]`);
+  if(bar) bar.classList.add('pinned');
+}
+function hideDetail(){
+  tooltip.classList.remove('show');
+  pinnedId = null;
+  document.querySelectorAll('.gantt-bar.pinned').forEach(el => el.classList.remove('pinned'));
+}
+document.addEventListener('click', (e) => {
+  if(!tooltip.contains(e.target) && !e.target.closest('.gantt-bar') && !e.target.closest('.pcard') && !e.target.closest('.gantt-label-col')) hideDetail();
+});
+
+// ---------- Gantt ----------
+function renderYearTicks(){
+  let html = '';
+  for(let y = TIMELINE_MIN; y <= TIMELINE_MAX; y += 2){
+    html += `<div class="gantt-year-tick" style="left:${yearToPct(y)}%">${y}</div>`;
+  }
+  return html;
+}
+function ganttRowHtml(p){
+  const cat = CAT_META[p.category];
+  const left = yearToPct(p.fid_year);
+  const width = Math.max(yearToPct(p.bar_end) - left, 1.4);
+  const isFuture = p.stage_bucket === 'future';
+  const unknownEnd = !p.prod_year_known;
+  const label = isFuture
+    ? `FID ${p.fid_year} → ${unknownEnd ? '미정' : p.prod_year}`
+    : `${p.fid_year} → ${unknownEnd ? '미정' : p.prod_year}`;
+  return `<div class="gantt-row" data-id="${p.id}">
+    <div class="gantt-label-col" data-id="${p.id}">
+      <span class="grow-name" title="${p.name}">${p.name}</span>
+      <span class="grow-meta">${p.region} · ${p.stage_label}</span>
+    </div>
+    <div class="gantt-track">
+      <div class="gantt-bar cat-${cat.cls}${isFuture ? ' future' : ''}${unknownEnd ? ' unknown-end' : ''}" data-id="${p.id}"
+           style="left:${left}%;width:${width}%;" title="${p.name}">${label}</div>
+    </div>
+  </div>`;
+}
+function renderGantt(){
+  const visible = visibleProjects();
+  ganttEmpty.classList.toggle('show', visible.length === 0);
+  if(visible.length === 0){ ganttInner.innerHTML = ''; return; }
+
+  const todayPct = yearToPct(CURRENT_YEAR);
+  let html = `<div class="gantt-axis">
+      <div class="gantt-label-col">프로젝트</div>
+      <div class="gantt-years">${renderYearTicks()}
+        <div class="gantt-today-line" style="left:${todayPct}%"></div>
+        <div class="gantt-today-label" style="left:${todayPct}%">오늘(${CURRENT_YEAR})</div>
+      </div>
+    </div>`;
+
+  Object.keys(CAT_META).forEach(catKey => {
+    const rows = visible.filter(p => p.category === catKey).sort((a,b) => a.fid_year - b.fid_year || a.name.localeCompare(b.name,'ko'));
+    if(rows.length === 0) return;
+    html += `<div class="gantt-group-header">
+        <div class="gantt-label-col"><span class="dot ${CAT_META[catKey].cls}"></span>${CAT_META[catKey].label} (${rows.length})</div>
+        <div class="gantt-track" style="position:relative;">
+          <div class="gantt-today-line" style="left:${todayPct}%"></div>
+        </div>
+      </div>`;
+    rows.forEach(p => { html += ganttRowHtml(p); });
+  });
+
+  ganttInner.innerHTML = html;
+
+  ganttInner.querySelectorAll('.gantt-bar').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const p = PROJECTS.find(x => x.id === el.getAttribute('data-id'));
+      if(p) showDetail(p, el);
+    });
+  });
+  ganttInner.querySelectorAll('.gantt-label-col[data-id]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const p = PROJECTS.find(x => x.id === el.getAttribute('data-id'));
+      const bar = ganttInner.querySelector(`.gantt-bar[data-id="${el.getAttribute('data-id')}"]`);
+      if(p) showDetail(p, bar || el);
+    });
+  });
+}
+
+// ---------- 분야별 요약 ----------
+function renderSummary(){
+  const grid = document.getElementById('summaryGrid');
+  let html = '';
+  Object.keys(CAT_META).forEach(catKey => {
+    const cat = CAT_META[catKey];
+    const all = PROJECTS.filter(p => p.category === catKey);
+    const active = all.filter(p => p.stage_bucket === 'active').length;
+    const future = all.filter(p => p.stage_bucket === 'future').length;
+    const leads = all.filter(p => p.prod_year_known).map(p => p.prod_year - p.fid_year);
+    const avgLead = leads.length ? (leads.reduce((a,b)=>a+b,0)/leads.length).toFixed(1) : 'N/A';
+    html += `<div class="summary-card">
+        <div class="sc-head"><span class="dot ${cat.cls}"></span><span class="lbl">${cat.label}</span></div>
+        <div class="sc-stats">
+          <div class="sc-stat"><div class="num">${active}</div><div class="lbl">진행중</div></div>
+          <div class="sc-stat"><div class="num">${future}</div><div class="lbl">예정</div></div>
+        </div>
+        <div class="sc-lead"><span>평균 FID→가동 리드타임</span><b>${avgLead === 'N/A' ? avgLead : avgLead + '년'}</b></div>
+      </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+// ---------- 상세 카드 ----------
+function pcardHtml(p){
+  const cat = CAT_META[p.category];
+  const srcHtml = p.source_url
+    ? `<a href="${p.source_url}" target="_blank" rel="noopener" style="color:var(--cat-${cat.cls})" onclick="event.stopPropagation()">${p.source_name} ↗</a>`
+    : `<span style="color:var(--muted)">${p.source_name}</span>`;
+  const prodLabel = p.prod_year_known ? `${p.prod_year}` : '미정';
+  const stakeLine = (p.stakeholders && p.stakeholders.length)
+    ? `<div class="pc-stake"><b>참여 기관</b> ${p.stakeholders.map(s => `${s.role} · ${s.name}`).join(' / ')}</div>`
+    : '';
+  return `<div class="pcard" data-id="${p.id}">
+      <div class="pc-cat"><span class="dot ${cat.cls}"></span>${cat.label} · ${p.region}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-loc">${p.country}${p.location_text ? ' · ' + p.location_text : ''} · ${p.client}</div>
+      <div class="pc-tags">
+        <span class="pc-tag stage-${p.stage_bucket}">${p.stage_label}</span>
+        ${p.feature_tag ? `<span class="pc-tag">${p.feature_tag}</span>` : ''}
+      </div>
+      <div class="pc-sched">FID ${p.fid_year}<span class="fid-type">${p.fid_year_type_label}</span> → 가동 ${prodLabel}</div>
+      ${stakeLine}
+      <div class="pc-desc">${p.description_kr}</div>
+      <div class="pc-src"><span style="color:var(--muted)">${p.source_name ? '출처' : ''}</span>${srcHtml}</div>
+    </div>`;
+}
+function renderCards(){
+  const visible = visibleProjects().slice().sort((a,b) => a.fid_year - b.fid_year || a.name.localeCompare(b.name,'ko'));
+  cardEmpty.classList.toggle('show', visible.length === 0);
+  cardGrid.innerHTML = visible.map(pcardHtml).join('');
+  cardGrid.querySelectorAll('.pcard').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const p = PROJECTS.find(x => x.id === el.getAttribute('data-id'));
+      if(p) showDetail(p, el);
+    });
+  });
+}
+
+// ---------- filters ----------
+document.querySelectorAll('[data-filter-cat]').forEach(sw => {
+  sw.addEventListener('click', () => {
+    const cat = sw.getAttribute('data-filter-cat');
+    if(activeCats.has(cat)){ activeCats.delete(cat); sw.classList.add('off'); }
+    else { activeCats.add(cat); sw.classList.remove('off'); }
+    refresh();
+  });
+});
+document.querySelectorAll('[data-filter-stage]').forEach(sw => {
+  sw.addEventListener('click', () => {
+    const st = sw.getAttribute('data-filter-stage');
+    if(activeStages.has(st)){ activeStages.delete(st); sw.classList.add('off'); }
+    else { activeStages.add(st); sw.classList.remove('off'); }
+    refresh();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchQuery = e.target.value.trim().toLowerCase();
+  refresh();
+});
+
+function resetFilters(){
+  activeCats.clear(); Object.keys(CAT_META).forEach(c => activeCats.add(c));
+  activeStages.clear(); ['active','future'].forEach(s => activeStages.add(s));
+  document.querySelectorAll('[data-filter-cat],[data-filter-stage]').forEach(sw => sw.classList.remove('off'));
+  searchQuery = ''; document.getElementById('searchInput').value = '';
+  refresh();
+}
+
+function refresh(){
+  renderGantt();
+  renderCards();
+}
+renderSummary();
+refresh();
+
+// ---------- theme toggle (in-memory only; no persistence) ----------
+const themeToggle = document.getElementById('themeToggle');
+const rootEl = document.documentElement;
+function currentTheme(){
+  if(rootEl.getAttribute('data-theme')) return rootEl.getAttribute('data-theme');
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+themeToggle.addEventListener('click', () => {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  rootEl.setAttribute('data-theme', next);
+});
+
+// ---------- hamburger menu ----------
+const menuToggle = document.getElementById('menuToggle');
+const menuPanel = document.getElementById('menuPanel');
+menuToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const open = menuPanel.classList.toggle('open');
+  menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+document.addEventListener('click', (e) => {
+  if(!menuPanel.contains(e.target) && e.target !== menuToggle && !menuToggle.contains(e.target)){
+    menuPanel.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    menuPanel.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    hideDetail();
+  }
+});
+menuPanel.querySelectorAll('a[data-action]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const action = a.getAttribute('data-action');
+    if(action === 'reset-filters'){
+      resetFilters();
+    } else if(action === 'only-active'){
+      activeStages.clear(); activeStages.add('active');
+      document.querySelectorAll('[data-filter-stage]').forEach(sw => {
+        sw.classList.toggle('off', sw.getAttribute('data-filter-stage') !== 'active');
+      });
+      refresh();
+    } else if(action === 'only-future'){
+      activeStages.clear(); activeStages.add('future');
+      document.querySelectorAll('[data-filter-stage]').forEach(sw => {
+        sw.classList.toggle('off', sw.getAttribute('data-filter-stage') !== 'future');
+      });
+      refresh();
+    }
+    menuPanel.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  });
+});
+
+// ---------- back-to-top ----------
+const backToTop = document.getElementById('backToTop');
+window.addEventListener('scroll', () => {
+  backToTop.classList.toggle('show', window.scrollY > 400);
+}, {passive: true});
+backToTop.addEventListener('click', () => {
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+</script>
+
+<script>(function () {
+  // Run only after the document has finished parsing (DOMContentLoaded).
+  // This file used to be loaded as `<script defer src="/auth-gate.js">`,
+  // and browsers execute same-document `defer` scripts strictly in source
+  // order -- so it always ran *after* the two `defer`-loaded Firebase SDK
+  // scripts above it, guaranteeing `window.firebase` existed by the time
+  // this code ran. Since 2026-09-08 this file's contents get spliced
+  // directly into index.html as a plain inline script near the end of
+  // <body> (see build_dashboard.py) to fix the file:// blank-screen bug --
+  // but the `defer` attribute has NO
+  // effect on inline scripts (they always run immediately, synchronously,
+  // at their position in the document), so this inline script started
+  // running *before* the still-pending deferred Firebase scripts, meaning
+  // `window.firebase` was always undefined here. That silently hit the
+  // "Firebase SDK not loaded" fallback below on every page load: the page
+  // still became visible (so it wasn't blank), but the login form's submit
+  // handler was never attached, so clicking "로그인" did nothing at all
+  // (2026-09-08, Jeffrey: GitHub Pages 배포 후 "제출해도 에러도 없고 아무
+  // 반응 없음"). Waiting for DOMContentLoaded restores the original
+  // ordering guarantee regardless of whether this file ends up inlined,
+  // external+defer, or injected some other way -- do not remove this wait.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
+  } else {
+    run();
+  }
+
+  function run() {
+  var firebaseConfig = {
+    apiKey: "AIzaSyCTys1CFNFWjJZqP9mbH9Y_xSpIndyO-ew",
+    authDomain: "megaline-htv-market-report.firebaseapp.com",
+    projectId: "megaline-htv-market-report",
+    storageBucket: "megaline-htv-market-report.firebasestorage.app",
+    messagingSenderId: "1073599287472",
+    appId: "1:1073599287472:web:056ecdce57ded3afe2eb75",
+  };
+
+  var AUTHED_HINT_KEY = "mgProjectMapAuthed";
+
+  // Fail-safe: reveal the page even if Firebase never loads/responds (e.g. blocked
+  // CDN), instead of leaving it permanently invisible.
+  var revealTimer = setTimeout(revealPage, 3000);
+  function revealPage() {
+    clearTimeout(revealTimer);
+    document.documentElement.style.visibility = "visible";
+  }
+
+  if (!window.firebase || !firebase.apps) {
+    console.error("auth-gate: Firebase SDK not loaded");
+    revealPage();
+    return;
+  }
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  var auth = firebase.auth();
+
+  var gate = document.getElementById("authGate");
+  var form = document.getElementById("authForm");
+  var emailInput = document.getElementById("authEmail");
+  var pwInput = document.getElementById("authPassword");
+  var errorBox = document.getElementById("authError");
+  var forgotLink = document.getElementById("authForgot");
+  var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+  function showError(msg) {
+    if (!errorBox) return;
+    errorBox.textContent = msg;
+    errorBox.hidden = false;
+  }
+
+  function setAuthedHint(isAuthed) {
+    try {
+      if (isAuthed) localStorage.setItem(AUTHED_HINT_KEY, "1");
+      else localStorage.removeItem(AUTHED_HINT_KEY);
+    } catch (e) {
+      /* localStorage unavailable -- ignore, falls back to normal (slower) flow */
+    }
+  }
+
+  // The dashboard has a hamburger menu (#menuPanel) -- put logout there. If a
+  // future page variant ever lacks it, fall back to a small icon button next
+  // to the theme toggle instead.
+  function injectLogoutControl(user) {
+    var menuPanel = document.getElementById("menuPanel");
+    if (menuPanel) {
+      if (document.getElementById("authLogoutMenuItem")) return;
+      var divider = document.createElement("div");
+      divider.className = "menu-divider";
+      divider.id = "authLogoutDivider";
+      var item = document.createElement("a");
+      item.id = "authLogoutMenuItem";
+      item.href = "#";
+      item.setAttribute("role", "menuitem");
+      item.textContent = "로그아웃 (" + user.email + ")";
+      item.addEventListener("click", function (e) {
+        e.preventDefault();
+        auth.signOut();
+      });
+      menuPanel.appendChild(divider);
+      menuPanel.appendChild(item);
+    } else {
+      if (document.getElementById("authLogoutBtn")) return;
+      var anchor = document.getElementById("themeToggle");
+      if (!anchor || !anchor.parentElement) return;
+      var btn = document.createElement("button");
+      btn.id = "authLogoutBtn";
+      btn.className = "icon-btn auth-logout-btn";
+      btn.type = "button";
+      btn.title = "로그아웃 (" + user.email + ")";
+      btn.setAttribute("aria-label", "로그아웃");
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>';
+      btn.addEventListener("click", function () {
+        auth.signOut();
+      });
+      anchor.parentElement.insertBefore(btn, anchor);
+    }
+  }
+
+  function removeLogoutControl() {
+    var menuItem = document.getElementById("authLogoutMenuItem");
+    if (menuItem) menuItem.remove();
+    var divider = document.getElementById("authLogoutDivider");
+    if (divider) divider.remove();
+    var btn = document.getElementById("authLogoutBtn");
+    if (btn) btn.remove();
+  }
+
+  auth.onAuthStateChanged(function (user) {
+    if (user) {
+      setAuthedHint(true);
+      if (gate) gate.style.display = "none";
+      document.documentElement.style.overflow = "";
+      injectLogoutControl(user);
+    } else {
+      setAuthedHint(false);
+      if (gate) gate.style.display = "flex";
+      document.documentElement.style.overflow = "hidden";
+      removeLogoutControl();
+    }
+    // Only reveal the page once we know which state to show -- the inline
+    // optimistic-reveal snippet in <body> already handles the common case
+    // (returning signed-in user) instantly; this is the authoritative
+    // confirmation/fallback for everyone else.
+    revealPage();
+  });
+
+  if (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (errorBox) errorBox.hidden = true;
+      if (submitBtn) submitBtn.disabled = true;
+      auth
+        .signInWithEmailAndPassword(emailInput.value.trim(), pwInput.value)
+        .catch(function () {
+          showError("이메일 또는 비밀번호가 올바르지 않습니다.");
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
+    });
+  }
+
+  if (forgotLink) {
+    forgotLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      var email = emailInput.value.trim();
+      if (!email) {
+        showError("비밀번호 재설정 메일을 받을 이메일을 먼저 입력하세요.");
+        return;
+      }
+      auth
+        .sendPasswordResetEmail(email)
+        .then(function () {
+          showError("비밀번호 재설정 메일을 보냈습니다. 받은편지함을 확인하세요.");
+        })
+        .catch(function () {
+          showError("재설정 메일 발송에 실패했습니다. 이메일을 확인하세요.");
+        });
+    });
+  }
+  } // end run()
+})();
+</script>
+
+</body>
+</html>
